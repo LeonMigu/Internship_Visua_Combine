@@ -106,24 +106,24 @@ server <- function(input, output, session){
   
   #Plotting the scatterplot with plotly
   output$plot_overview <- renderPlotly({
-    if(input$choice=='Frequency'){
-      #s1 matches the row selected by the user
-      s1 <- input$plot_rows_selected
-      if(!length(s1)){
-        plot_ly(d_shared, x = ~rowname, y = ~freq, key = ~key, type = 'scatter', mode='line',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequency according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected", color = I('green'))
+    #s matches the row selected by the user
+    s <- input$plot_rows_selected
+    if(!length(s)){
+      if(input$choice=='Frequency'){
+        plot_ly(d_shared, x = ~rowname, y = ~freq, key = ~key, type = 'scatter', mode='line',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequency according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected", defaultValues = s,color = I('green'))
       }
-      else if(length(s1)){
-        plot_ly(d, x = ~rowname, y = ~freq, key = ~key, type = 'scatter', mode='line',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequency according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)
+      else if(input$choice=='Random'){
+        plot_ly(d_shared, x = ~rowname, y = ~random, key = ~key, type = 'scatter', mode='markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Random according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Random'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected",defaultValues = s, color = I('green'))
+        
       }
     }
-    else if(input$choice=='Random'){
-      #s2 is the same as s1 but for the other graph
-      s2 <- input$plot_rows_selected
-      if(!length(s2)){
-        plot_ly(d_shared, x = ~rowname, y = ~random, key = ~key, type = 'scatter', mode='markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Random according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Random'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected", color = I('green'))
+    else if(length(s)){
+      if(input$choice=='Frequency'){
+        plot_ly(d, x = ~rowname, y = ~freq, key = ~key, type = 'scatter', mode='line',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequency according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)
       }
-      else if(length(s2)){
-        plot_ly(d, x = ~rowname, y = ~random, key = ~key, type = 'scatter', mode='markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Random according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Random'), titlefont = 'arial', showlegend = FALSE)      }
+      else if(input$choice=='Random'){
+        plot_ly(d, x = ~rowname, y = ~random, key = ~key, type = 'scatter', mode='markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Random according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Random'), titlefont = 'arial', showlegend = FALSE)      
+      }
     }
   })
   
