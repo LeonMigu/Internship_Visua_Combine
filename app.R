@@ -110,10 +110,10 @@ server <- function(input, output, session){
     s <- input$plot_rows_selected
     if(!length(s)){
       if(input$choice=='Frequency'){
-        plot_ly(d_shared, x = ~rowname, y = ~freq, key = ~key, type = 'scatter', mode='line',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequency according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected", defaultValues = s,color = I('green'))
+        plot_ly(d_shared, x = ~rowname, y = ~freq, key = ~key, type = 'scatter', mode='line',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequency according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected", 'plotly_deselect',  defaultValues = s,color = I('green'))
       }
       else if(input$choice=='Random'){
-        plot_ly(d_shared, x = ~rowname, y = ~random, key = ~key, type = 'scatter', mode='markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Random according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Random'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected",defaultValues = s, color = I('green'))
+        plot_ly(d_shared, x = ~rowname, y = ~random, key = ~key, type = 'scatter', mode='markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Random according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Random'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected", 'plotly_deselect', defaultValues = s, color = I('green'))
         
       }
     }
@@ -129,12 +129,15 @@ server <- function(input, output, session){
   
   #Plotting the Data Table
   output$table_overview <- DT::renderDataTable({
+    #Choosing the data selected in the plot. It is done by crosstalk, see CRAN R Crosstalk SharedData for more details
     dsel <- d[d_shared$selection(),]
+    #Creating the data table with the initial data
     dt <-DT::datatable(d,options = list(columnDefs = list(list(className = 'dt-center', targets = "_all")),pageLength = 5, lengthMenu = c(5, 10, 15, 20)),class = 'display')
-    
+    #This condition is whether a data is selected on the plot
     if (NROW(dsel) == 0) {
       dt
     } else {
+      #If a data is selected, then we change the style of the table in order to highlight the selected rows, which are dsel$rowname
       DT::formatStyle(dt, "rowname", target = "row",
                       color = DT::styleEqual(dsel$rowname, rep("white", length(dsel$rowname))), backgroundColor = DT::styleEqual(dsel$rowname, rep("black", length(dsel$rowname))))
     }
@@ -145,7 +148,6 @@ server <- function(input, output, session){
   #Choosing the data to give to the wordcloud, depending on which data is taken from plotly
   filter_d <- reactive({
     #Changing the data in order to match what the wordcloud takes as an input
-    
     d_prime_reac <- reactive({data.frame(d_real_shared()$word, d_real_shared()$freq)})
     head(subset(d_prime_reac(), d_real_shared...freq <= (input$slide_value_freq[2]) & d_real_shared...freq >= 
                                           (input$slide_value_freq[1])), 
