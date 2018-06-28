@@ -4,6 +4,7 @@ library(plotly)
 library(wordcloud2)
 library(tm)
 library(crosstalk)
+library(rmarkdown)
 
 #Data (it will be the preprocessing of Colette)
 
@@ -71,13 +72,17 @@ ui <- navbarPage("NLP App",
                                      choice = c('Frequency', 'Random')),
                     fileInput("file1", "Choose PDF File",
                               multiple = FALSE)
-                         
                   ),
                   #The main panel is composed of a plotly graph and a data table
                   mainPanel(
                     plotlyOutput("plot_overview"),
                     DT::dataTableOutput("table_overview"))
-                )
+                ),
+               fluidRow(
+                 radioButtons('format', 'Document format', c('PDF', 'HTML', 'Word'),
+                              inline = TRUE),
+                 downloadButton("report", "Generate report")
+               )
       ),
     tabPanel("Plot filtering", 
              #Slider button to filter the data
@@ -110,7 +115,7 @@ server <- function(input, output, session){
     s <- input$plot_rows_selected
     if(!length(s)){
       if(input$choice=='Frequency'){
-        plot_ly(d_shared, x = ~rowname, y = ~freq, key = ~key, type = 'scatter', mode='line',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequency according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected", 'plotly_deselect',  defaultValues = s,color = I('green'))
+        plot_ly(d_shared, x = ~rowname, y = ~freq, key = ~key, type = 'scatter', mode='lines',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequency according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected", 'plotly_deselect',  defaultValues = s,color = I('green'))
       }
       else if(input$choice=='Random'){
         plot_ly(d_shared, x = ~rowname, y = ~random, key = ~key, type = 'scatter', mode='markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Random according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Random'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected", 'plotly_deselect', defaultValues = s, color = I('green'))
@@ -119,7 +124,7 @@ server <- function(input, output, session){
     }
     else if(length(s)){
       if(input$choice=='Frequency'){
-        plot_ly(d, x = ~rowname, y = ~freq, key = ~key, type = 'scatter', mode='line',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequency according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)
+        plot_ly(d, x = ~rowname, y = ~freq, key = ~key, type = 'scatter', mode='lines',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequency according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)
       }
       else if(input$choice=='Random'){
         plot_ly(d, x = ~rowname, y = ~random, key = ~key, type = 'scatter', mode='markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Random according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Random'), titlefont = 'arial', showlegend = FALSE)      
@@ -160,6 +165,29 @@ server <- function(input, output, session){
   output$test <- renderPrint({
     input$selected_word
   })
+  output$downloadReport <- downloadHandler(
+    filename = function() {
+      paste('my_report', sep = '.', switch(
+        input$format, PDF = 'pdf', HTML = 'html', Word = 'docx'
+      ))
+    },
+    content = function(file) {
+      src <- normalizePath('report.Rmd')
+      
+      # temporarily switch to the temp dir, in case you do not have write
+      # permission to the current working directory
+      owd <- setwd(tempdir())
+      on.exit(setwd(owd))
+      file.copy(src, 'report.Rmd', overwrite = TRUE)
+      
+      library(rmarkdown)
+      out <- render('report.Rmd', switch(
+        input$format,
+        PDF = pdf_document(), HTML = html_document(), Word = word_document()
+      ))
+      file.rename(out, file)
+    }
+  )
 }
 
 shinyApp(ui, server)
