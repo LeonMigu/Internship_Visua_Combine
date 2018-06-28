@@ -48,5 +48,12 @@ dsw <- data.frame(ds$word, ds$freq)
 dswf <- head(subset(dsw, dsw$freq <= mafw & dsw$freq >= mifw), mww)
 library(wordcloud)
 wordcloud(ds$word, ds$freq, random.order=FALSE,rot.per=0.40,use.r.layout=FALSE, random.color=TRUE,colors=bp.cols)
-#plot_ly(ds, x = ~ds$rowname, y = ~ds$freq, type = 'scatter', mode='lines')
+#
+```
+
+```{r}
+p <- plot_ly(ds, x = ~rowname, y = ~freq, type = 'scatter', mode='lines')
+
+tmpFile <- tempfile(fileext = ".png")
+export(p, file = tmpFile)
 ```

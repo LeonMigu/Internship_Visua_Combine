@@ -6,6 +6,7 @@ library(tm)
 library(crosstalk)
 library(rmarkdown)
 library(knitr)
+library(webshot)
 
 #Data (it will be the preprocessing of Colette)
 
