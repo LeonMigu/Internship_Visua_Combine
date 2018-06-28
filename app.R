@@ -5,6 +5,7 @@ library(wordcloud2)
 library(tm)
 library(crosstalk)
 library(rmarkdown)
+library(knitr)
 
 #Data (it will be the preprocessing of Colette)
 
@@ -154,8 +155,8 @@ server <- function(input, output, session){
   filter_d <- reactive({
     #Changing the data in order to match what the wordcloud takes as an input
     d_prime_reac <- reactive({data.frame(d_real_shared()$word, d_real_shared()$freq)})
-    head(subset(d_prime_reac(), d_real_shared...freq <= (input$slide_value_freq[2]) & d_real_shared...freq >= 
-                                          (input$slide_value_freq[1])), 
+    head(subset(d_prime_reac(), d_real_shared...freq <= input$slide_value_freq[2] & d_real_shared...freq >= 
+                                          input$slide_value_freq[1]), 
                                  input$slide_value_word)
   })
  
@@ -165,27 +166,31 @@ server <- function(input, output, session){
   output$test <- renderPrint({
     input$selected_word
   })
-  output$downloadReport <- downloadHandler(
+  output$report <- downloadHandler(
     filename = function() {
       paste('my_report', sep = '.', switch(
         input$format, PDF = 'pdf', HTML = 'html', Word = 'docx'
       ))
     },
     content = function(file) {
-      src <- normalizePath('report.Rmd')
+      # Copy the report file to a temporary directory before processing it, in
+      # case we don't have write permissions to the current working dir (which
+      # can happen when deployed).
+      tempReport <- file.path(tempdir(), "report.Rmd")
+      file.copy("report.Rmd", tempReport, overwrite = TRUE)
       
-      # temporarily switch to the temp dir, in case you do not have write
-      # permission to the current working directory
-      owd <- setwd(tempdir())
-      on.exit(setwd(owd))
-      file.copy(src, 'report.Rmd', overwrite = TRUE)
+      # Set up parameters to pass to Rmd document
+      params <- list(data_complete = d, data_selected_plot = d[d_shared$selection(),], 
+                     min_freq_wordcloud = input$slide_value_freq[1], max_freq_wordcloud = input$slide_value_freq[2],
+                     max_word_wordcloud = input$slide_value_word)
       
-      library(rmarkdown)
-      out <- render('report.Rmd', switch(
-        input$format,
-        PDF = pdf_document(), HTML = html_document(), Word = word_document()
-      ))
-      file.rename(out, file)
+      # Knit the document, passing in the `params` list, and eval it in a
+      # child of the global environment (this isolates the code in the document
+      # from the code in this app).
+      rmarkdown::render(tempReport, output_file = file,
+                        params = params,
+                        envir = new.env(parent = globalenv())
+      )
     }
   )
 }

@@ -1,28 +1,52 @@
 ---
 title: "report"
-output: html_document
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+params: 
+  data_complete: NA
+  data_selected_plot: NA
+  min_freq_wordcloud: NA
+  max_freq_wordcloud: NA
+  max_word_wordcloud: NA
+always_allow_html: yes
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r include=FALSE}
+d <- params$data_complete
+ds <- params$data_selected_plot
+mifw <- params$min_freq_wordcloud
+mafw <- params$max_freq_wordcloud
+mww <- params$max_word_wordcloud
 ```
 
 ## Including Plots
 
-You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+plot(d$rowname, d$freq)
+plot(d$rowname, d$random)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+plot(ds$rowname, ds$freq)
+plot(ds$rowname, ds$random)
+```
+
+```{r}
+kable(ds, caption ="Table of the data selected in the plot")
+```
+
+```{r}
+bp.cols<- c("light blue","cornflowerblue", "coral2", brewer.pal(8,"Dark2"))
+dsw <- data.frame(ds$word, ds$freq)
+dswf <- head(subset(dsw, dsw$freq <= mafw & dsw$freq >= mifw), mww)
+library(wordcloud)
+wordcloud(ds$word, ds$freq, random.order=FALSE,rot.per=0.40,use.r.layout=FALSE, random.color=TRUE,colors=bp.cols)
+#plot_ly(ds, x = ~ds$rowname, y = ~ds$freq, type = 'scatter', mode='lines')
+```
