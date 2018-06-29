@@ -10,56 +10,7 @@ library(knitr)
 library(webshot)
 #library(tinytext)
 
-#Data (it will be the preprocessing of Colette)
 
-# Read the text file from internet
-filePath <- "http://www.sthda.com/sthda/RDoc/example-files/martin-luther-king-i-have-a-dream-speech.txt"
-text <- readLines(filePath)
-
-# Load the data as a corpus
-docs <- Corpus(VectorSource(text))
-
-inspect(docs)
-
-toSpace <- content_transformer(function (x , pattern ) gsub(pattern, " ", x))
-docs <- tm_map(docs, toSpace, "/")
-docs <- tm_map(docs, toSpace, "@")
-docs <- tm_map(docs, toSpace, "\\|")
-
-# Convert the text to lower case
-docs <- tm_map(docs, content_transformer(tolower))
-# Remove numbers
-docs <- tm_map(docs, removeNumbers)
-# Remove english common stopwords
-docs <- tm_map(docs, removeWords, stopwords("english"))
-# Remove your own stop word
-# specify your stopwords as a character vector
-docs <- tm_map(docs, removeWords, c("blabla1", "blabla2")) 
-# Remove punctuations
-docs <- tm_map(docs, removePunctuation)
-# Eliminate extra white spaces
-docs <- tm_map(docs, stripWhitespace)
-# Text stemming
-# docs <- tm_map(docs, stemDocument)
-
-#Creating the data frame that will be used by the code
-
-dtm <- TermDocumentMatrix(docs)
-m <- as.matrix(dtm)
-v <- sort(rowSums(m),decreasing=TRUE)
-r <- abs(rnorm(length(v)))
-w <- names(v)
-#Changing the data structure in order that the id is a number and not a word, if not it doesn't work
-names(v) <- seq(1, length(v))
-#Implementing rownames in order to access them later. It will be useful to make the key
-wr <- seq(1, length(v))
-#Creating the dataframe 
-d <- data.frame(rowname = wr, word = w, freq=v, random = r)
-head(d, 10)
-
-#Find the maximum frequency and the number of words to implement the sliderinputs
-m <- max(d$freq)
-n <- NROW(d)
 
 # use the key aesthetic/argument to help uniquely identify selected observations
 key <- row.names(d)
@@ -117,6 +68,8 @@ server <- function(input, output, session){
   output$plot_overview <- renderPlotly({
     #s matches the row selected by the user
     s <- input$plot_rows_selected
+    #The if for the length doesn't seem very useful, because it works without it, however, I found it on the internet and there is maybe a reason I haven't found yet, so I prefer to let for now.
+    #if there are no row selected yet, you can highlight the plot by selecting some points
     if(!length(s)){
       if(input$choice=='Frequency'){
         plot_ly(d_shared, x = ~rowname, y = ~freq, key = ~key, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequency according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected", 'plotly_deselect',  defaultValues = s,color = I('green'))
@@ -126,6 +79,7 @@ server <- function(input, output, session){
         
       }
     }
+    #If there are row selected, you can't higlight the plot because it is already highlighted 
     else if(length(s)){
       if(input$choice=='Frequency'){
         plot_ly(d, x = ~rowname, y = ~freq, key = ~key, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequency according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)
