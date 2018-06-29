@@ -2,11 +2,13 @@ library(shiny)
 library(DT)
 library(plotly)
 library(wordcloud2)
+library(wordcloud)
 library(tm)
 library(crosstalk)
 library(rmarkdown)
 library(knitr)
 library(webshot)
+#library(tinytext)
 
 #Data (it will be the preprocessing of Colette)
 
@@ -117,7 +119,7 @@ server <- function(input, output, session){
     s <- input$plot_rows_selected
     if(!length(s)){
       if(input$choice=='Frequency'){
-        plot_ly(d_shared, x = ~rowname, y = ~freq, key = ~key, type = 'scatter', mode='lines',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequency according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected", 'plotly_deselect',  defaultValues = s,color = I('green'))
+        plot_ly(d_shared, x = ~rowname, y = ~freq, key = ~key, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequency according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected", 'plotly_deselect',  defaultValues = s,color = I('green'))
       }
       else if(input$choice=='Random'){
         plot_ly(d_shared, x = ~rowname, y = ~random, key = ~key, type = 'scatter', mode='markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Random according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Random'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected", 'plotly_deselect', defaultValues = s, color = I('green'))
@@ -126,7 +128,7 @@ server <- function(input, output, session){
     }
     else if(length(s)){
       if(input$choice=='Frequency'){
-        plot_ly(d, x = ~rowname, y = ~freq, key = ~key, type = 'scatter', mode='lines',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequency according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)
+        plot_ly(d, x = ~rowname, y = ~freq, key = ~key, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequency according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)
       }
       else if(input$choice=='Random'){
         plot_ly(d, x = ~rowname, y = ~random, key = ~key, type = 'scatter', mode='markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Random according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Random'), titlefont = 'arial', showlegend = FALSE)      
@@ -188,7 +190,10 @@ server <- function(input, output, session){
       # Knit the document, passing in the `params` list, and eval it in a
       # child of the global environment (this isolates the code in the document
       # from the code in this app).
-      rmarkdown::render(tempReport, output_file = file,
+      rmarkdown::render(tempReport,switch(
+        input$format,
+        PDF = pdf_document(), HTML = html_document(), Word = word_document()
+      ), output_file = file,
                         params = params,
                         envir = new.env(parent = globalenv())
       )
