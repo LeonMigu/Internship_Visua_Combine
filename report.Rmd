@@ -41,8 +41,10 @@ export(p2, file = tmpFile)
 
 ```{r}
 if(l){
+  #plot(ds$rowname, ds$freq)
   p3 <- plot_ly(ds, x = ~rowname, y = ~freq, key = ~key, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequency according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)
   tmpFile <- tempfile(fileext = ".png")
+  tmpFile
   export(p3, file = tmpFile)
 
  # p4 <- plot_ly(ds, x = ~ds$rowname, y = ~ds$random, key = ~key, type = 'scatter', mode='markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Random according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Random'), titlefont = 'arial', showlegend = FALSE)
