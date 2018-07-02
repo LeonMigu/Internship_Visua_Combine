@@ -26,7 +26,7 @@ mww <- params$max_word_wordcloud
 l <- length(ds$rowname)
 ```
 
-##Overview 
+#Overview 
 
 You can see just below the different plots of the overview: 
 
@@ -40,9 +40,10 @@ tmpFile <- tempfile(fileext = ".png")
 export(p2, file = tmpFile)
 ```
 
-##Filter
+#Filter
 
-###Plots
+##Plots
+
 You can see here the different plots of the overview after selection of the interesting points:
 
 ```{r}
@@ -59,7 +60,7 @@ if(l){
 }
 ```
 
-###Table
+##Table
 
 Here is the table with the selected points from the overview:
 
@@ -69,7 +70,7 @@ kable(ds, caption ="Table of the data selected in the plot")
 }
 ```
 
-###Wordcloud
+##Wordcloud
 
 You can see just below the wordcloud with the interesting points:
 

@@ -133,8 +133,8 @@ server <- function(input, output, session){
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
       # can happen when deployed).
-      tempReport <- file.path(tempdir(), "report_test.Rmd")
-      file.copy("report_test.Rmd", tempReport, overwrite = TRUE)
+      tempReport <- file.path(tempdir(), "report.Rmd")
+      file.copy("report.Rmd", tempReport, overwrite = TRUE)
       
       # Set up parameters to pass to Rmd document
       params <- list(data_complete = d, data_selected_plot = d[d_shared$selection(),], 
