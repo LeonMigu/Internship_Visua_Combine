@@ -1,9 +1,12 @@
 ---
 title: "Report"
 output:
-  pdf_document: default
-  word_document: default
-  html_document: default
+  pdf_document: 
+    toc: true
+  word_document: 
+    toc: true
+  html_document: 
+    toc: true
 params: 
   data_complete: NA
   data_selected_plot: NA
@@ -26,38 +29,53 @@ mww <- params$max_word_wordcloud
 l <- length(ds$rowname)
 ```
 
+  
+##Overview 
 
-
+You can see just below the different plots of the overview: 
 
 ```{r}
 p1 <- plot_ly(d, x = ~rowname, y = ~freq, key = ~key, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequency according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)
 tmpFile <- tempfile(fileext = ".png")
 export(p1, file = tmpFile)
 
-p2 <- plot_ly(d, x = ~rowname, y = ~random, key = ~key, type = 'scatter', mode='markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Random according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Random'), titlefont = 'arial', showlegend = FALSE)
+p2 <- plot_ly(d, x = ~rowname, y = ~sort(random, decreasing = TRUE), key = ~key, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Random according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Random'), titlefont = 'arial', showlegend = FALSE)
 tmpFile <- tempfile(fileext = ".png")
 export(p2, file = tmpFile)
 ```
 
+##Filter
+
+###Plots
+You can see here the different plots of the overview after selection of the interesting points:
+
 ```{r}
 if(l){
-  #plot(ds$rowname, ds$freq)
-  p3 <- plot_ly(ds, x = ~rowname, y = ~freq, key = ~key, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequency according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)
-  tmpFile <- tempfile(fileext = ".png")
-  tmpFile
-  export(p3, file = tmpFile)
-
- # p4 <- plot_ly(ds, x = ~ds$rowname, y = ~ds$random, key = ~key, type = 'scatter', mode='markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Random according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Random'), titlefont = 'arial', showlegend = FALSE)
+  plot(ds$rowname, ds$freq, main = 'Frequencies according to the selected words', xlab = 'Word', ylab= 'Frequency', type = "b", cex = 0.5,lwd  = 1.5,col = "blue")
+  #p3 <- plot_ly(ds, x = ~rowname, y = ~freq, key = ~key, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequencies according to the slected words', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)
+  #tmpFile <- tempfile(fileext = ".png")
+  #export(p3, out_file = tmpFile)
+  
+  plot(ds$rowname, sort(ds$random, decreasing =TRUE), main = 'Randoms according to the selected words', xlab = 'Word', ylab= 'Random', type = "b", cex = 0.5,lwd  = 1.5,col = "blue")
+ # p4 <- plot_ly(ds, x = ~rowname, y = ~sort(random, decreasing = TRUE), key = ~key, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title  'Randoms according to the selected words', xaxis = list(title ='Word'), yaxis =list(title ='Random'), titlefont = 'arial', showlegend = FALSE)
   #tmpFile <- tempfile(fileext = ".png")
   #export(p4, file = tmpFile)
 }
 ```
+
+###Table
+
+Here is the table with the selected points from the overview:
 
 ```{r}
 if(l){
 kable(ds, caption ="Table of the data selected in the plot")
 }
 ```
+
+###Wordcloud
+
+You can see just below the wordcloud with the interesting points:
 
 ```{r}
 bp.cols<- c("light blue","cornflowerblue", "coral2", brewer.pal(8,"Dark2"))
