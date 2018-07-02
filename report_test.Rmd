@@ -1,0 +1,37 @@
+---
+title: "Report"
+output:
+  pdf_document: 
+    toc: true
+  word_document: 
+    toc: true
+  html_document: 
+    toc: true
+always_allow_html: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Overview 
+
+You can see just below the different plots of the overview: 
+
+
+## Filter
+
+### Plots
+
+You can see here the different plots of the overview after selection of the interesting points:
+
+
+
+### Table
+
+Here is the table with the selected points from the overview:
+
+
+### Wordcloud
+
+You can see just below the wordcloud with the interesting points:
