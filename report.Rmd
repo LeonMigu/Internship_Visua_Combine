@@ -48,17 +48,11 @@ You can see here the different plots of the overview after selection of the inte
 
 ```{r}
 if(l!=0){
-  
-  #plot(ds$rowname, ds$freq, main = 'Frequencies according to the selected words', xlab = 'Word', ylab= 'Frequency', type = "b", cex = 0.5,lwd  = 1.5,col = "blue")
-  
   key_part = row.names(ds)
   
   p3 <- plot_ly(ds, x = ~rowname, y = ~freq, key = ~key_part, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequencies according to the selected words', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)
   tmpFile <- tempfile(fileext = ".png")
-  #print(tempfile())
   export(p3, file = tmpFile)
-  #saveWidget(as_widget(p3), "temp.html")
-  #webshot("temp.html", file = tmpFile)
 }
 ```
 
@@ -90,7 +84,13 @@ dsw <- data.frame(ds$word, ds$freq)
 dswf <- head(subset(dsw, dsw$freq <= mafw & dsw$freq >= mifw), mww)
 if(l){
 library(wordcloud)
-wordcloud(ds$word, ds$freq, random.order=FALSE,rot.per=0.40,use.r.layout=FALSE, random.color=TRUE,colors=bp.cols)
+#This part is to add a title to the wordcloud. In order to do that, you have to change the layout before adding the title. It is explained here : https://stackoverflow.com/questions/15224913/r-add-title-to-wordcloud-graphics-png
+layout(matrix(c(1, 2), nrow=2), heights=c(1, 4))
+par(mar=rep(0, 4))
+plot.new()
+text(x=0.5, y=0.5, cex = 0.8, "Wordcloud 1 : Wordcloud of the selected points")
+#This is where we do the wordcloud, adding some colors and some other features.
+wordcloud(ds$word, ds$freq, random.order=FALSE,rot.per=0.40,use.r.layout=FALSE, random.color=TRUE,colors=bp.cols, main=text)
 }
 #w <- wordcloud2(data = dswf, shape = 'star', size = 0.8, shuffle =FALSE)
 #tmpFile <- tempfile(fileext = ".png")
