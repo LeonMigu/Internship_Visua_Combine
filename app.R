@@ -11,10 +11,6 @@ library(webshot)
 #library(tinytext)
 
 
-
-# use the key aesthetic/argument to help uniquely identify selected observations
-key <- row.names(d)
-
 #Shiny App
 #UI and layout. It implements the front-end
 #Creating a navbar page with different tabs, which are created by tabPanel

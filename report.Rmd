@@ -47,16 +47,26 @@ export(p2, file = tmpFile)
 You can see here the different plots of the overview after selection of the interesting points:
 
 ```{r}
-if(l){
-  plot(ds$rowname, ds$freq, main = 'Frequencies according to the selected words', xlab = 'Word', ylab= 'Frequency', type = "b", cex = 0.5,lwd  = 1.5,col = "blue")
-  #p3 <- plot_ly(ds, x = ~rowname, y = ~freq, key = ~key, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequencies according to the slected words', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)
-  #tmpFile <- tempfile(fileext = ".png")
-  #export(p3, out_file = tmpFile)
+if(l!=0){
   
-  plot(ds$rowname, sort(ds$random, decreasing =TRUE), main = 'Randoms according to the selected words', xlab = 'Word', ylab= 'Random', type = "b", cex = 0.5,lwd  = 1.5,col = "blue")
- # p4 <- plot_ly(ds, x = ~rowname, y = ~sort(random, decreasing = TRUE), key = ~key, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title  'Randoms according to the selected words', xaxis = list(title ='Word'), yaxis =list(title ='Random'), titlefont = 'arial', showlegend = FALSE)
-  #tmpFile <- tempfile(fileext = ".png")
-  #export(p4, file = tmpFile)
+  #plot(ds$rowname, ds$freq, main = 'Frequencies according to the selected words', xlab = 'Word', ylab= 'Frequency', type = "b", cex = 0.5,lwd  = 1.5,col = "blue")
+  
+  key_part = row.names(ds)
+  
+  p3 <- plot_ly(ds, x = ~rowname, y = ~freq, key = ~key_part, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequencies according to the selected words', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)
+  tmpFile <- tempfile(fileext = ".png")
+  #print(tempfile())
+  export(p3, file = tmpFile)
+  #saveWidget(as_widget(p3), "temp.html")
+  #webshot("temp.html", file = tmpFile)
+}
+```
+
+```{R}
+if(l!=0){
+  p4 <- plot_ly(ds, x = ~rowname, y = ~sort(random, decreasing = TRUE), key = ~key_part, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Randoms according to the selected words', xaxis = list(title ='Word'), yaxis =list(title ='Random'), titlefont = 'arial', showlegend = FALSE)
+  tmpFile2 <- tempfile(fileext = ".png")
+  export(p4, file = tmpFile2)
 }
 ```
 

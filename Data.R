@@ -48,3 +48,6 @@ head(d, 10)
 #Find the maximum frequency and the number of words to implement the sliderinputs
 m <- max(d$freq)
 n <- NROW(d)
+
+# use the key aesthetic/argument to help uniquely identify selected observations
+key <- row.names(d)
