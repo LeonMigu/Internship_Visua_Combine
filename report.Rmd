@@ -76,21 +76,21 @@ kable(ds, caption ="Table of the data selected in the plot")
 
 ##Wordcloud
 
-You can see just below the wordcloud with the interesting points:
+You can see just below the wordcloud with the interesting points with their frequencies between `r mifw` and `r mafw`, and a maximum number of words of `r mww`:
 
 ```{r}
 bp.cols<- c("light blue","cornflowerblue", "coral2", brewer.pal(8,"Dark2"))
 dsw <- data.frame(ds$word, ds$freq)
-dswf <- head(subset(dsw, dsw$freq <= mafw & dsw$freq >= mifw), mww)
+dswf <- head(subset(dsw, dsw$ds.freq <= mafw & dsw$ds.freq >= mifw), mww)
 if(l){
-library(wordcloud)
-#This part is to add a title to the wordcloud. In order to do that, you have to change the layout before adding the title. It is explained here : https://stackoverflow.com/questions/15224913/r-add-title-to-wordcloud-graphics-png
-layout(matrix(c(1, 2), nrow=2), heights=c(1, 4))
-par(mar=rep(0, 4))
-plot.new()
-text(x=0.5, y=0.5, cex = 0.8, "Wordcloud 1 : Wordcloud of the selected points")
-#This is where we do the wordcloud, adding some colors and some other features.
-wordcloud(ds$word, ds$freq, random.order=FALSE,rot.per=0.40,use.r.layout=FALSE, random.color=TRUE,colors=bp.cols, main=text)
+  library(wordcloud)
+  #This part is to add a title to the wordcloud. In order to do that, you have to change the layout before adding the title. It is explained here :     https://stackoverflow.com/questions/15224913/r-add-title-to-wordcloud-graphics-png
+  layout(matrix(c(1, 2), nrow=2), heights=c(1, 4))
+  par(mar=rep(0, 4))
+  plot.new()
+  text(x=0.5, y=0.5, cex = 0.8, "Wordcloud 1 : Wordcloud of the selected points")
+  #This is where we do the wordcloud, adding some colors and some other features.
+  wordcloud(dswf$ds.word, dswf$ds.freq, random.order=FALSE,rot.per=0.40,use.r.layout=FALSE, random.color=TRUE,colors=bp.cols, main=text)
 }
 #w <- wordcloud2(data = dswf, shape = 'star', size = 0.8, shuffle =FALSE)
 #tmpFile <- tempfile(fileext = ".png")

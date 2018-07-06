@@ -26,7 +26,7 @@ sidebar <- dashboardSidebar(
     radioButtons('format', 'Document format', c('PDF', 'HTML', 'Word'),
                  inline = TRUE),
     fluidRow(offset = 10,
-             downloadButton("report", "Generate report", class = "butt1"),
+    downloadButton("report", "Generate report", class = "butt1"),
     #Putting the color of the button in black and the writing in white so it is easier to see and to interact with
     tags$head(tags$style(".butt1{background-color:black;} .butt1{color: white;}"))
   ))

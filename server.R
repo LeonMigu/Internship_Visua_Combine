@@ -54,7 +54,7 @@ server <- function(input, output, session){
     d_prime_reac <- reactive({data.frame(d_real_shared()$word, d_real_shared()$freq)})
     head(subset(d_prime_reac(), d_real_shared...freq <= input$slide_value_freq[2] & d_real_shared...freq >= 
                   input$slide_value_freq[1]), 
-         input$slide_value_word)
+         input$slide_value_word+1)
   })
   
   #Creating the wordcloud and making it reactive to change in the input values
@@ -73,7 +73,7 @@ server <- function(input, output, session){
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
       # can happen when deployed).
-      tempReport <- file.path(tempdir(), "report.Rmd")
+      withProgress(message ="generating report", expr = {tempReport <- file.path(tempdir(), "report.Rmd")
       file.copy("report.Rmd", tempReport, overwrite = TRUE)
       
       # Set up parameters to pass to Rmd document
@@ -90,6 +90,8 @@ server <- function(input, output, session){
       ), output_file = file,
       params = params,
       envir = new.env(parent = globalenv())
+      )
+      }
       )
     }
   )
