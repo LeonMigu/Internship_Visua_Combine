@@ -56,7 +56,7 @@ body <- dashboardBody(
                  selectInput(inputId = 'choice', label = 'Choose a metric', 
                              choice = c('Frequency', 'Random'))               )
         ),
-        column(width = 4,
+        column(width = 8,
                box(
                  plotlyOutput("plot_overview")
                )

@@ -120,7 +120,7 @@ server <- function(input, output, session){
     }
     # This is equivalent to calling:
     #   dropdownMenu(type="messages", msgs[[1]], msgs[[2]], ...)
-    dropdownMenu( type = "notifications", .list = war)
+    dropdownMenu(type = "notifications", .list = war)
   })
   
 }
