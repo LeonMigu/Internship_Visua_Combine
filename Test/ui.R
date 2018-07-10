@@ -21,24 +21,10 @@ header <- dashboardHeader(title="NLP App",dropdownMenuOutput("warningMenu"))
 
 sidebar <- dashboardSidebar(
   sidebarMenu(
-    menuItem("Data", tabName = "data", icon = shiny::icon("th")),
     menuItem("Pre-processing",
-             menuSubItem("Overview", tabName = "overview_pre"), icon = icon("fas fa-wrench"),
-             menuSubItem("Filter", tabName = "filter_pre", icon = icon("fas fa-binoculars")),
-             menuSubItem("Details on demand", tabName = "details_pre", icon = icon("fas fa-sitemap"))
-             ),
-    menuItem("Analysis", tabName = "ana", 
-             menuSubItem("Overview", tabName = "overview_ana"), icon = icon("fab fa-leanpub"),
-             menuSubItem("Filter", tabName = "filter_ana", icon = icon("fas fa-binoculars")),
-             menuSubItem("Word in context", tabName = "wcontext_ana", icon = icon("fas fa-sitemap"))),
-    radioButtons('format', 'Document format', c('PDF', 'HTML', 'Word'),
-                 inline = TRUE),
-    fluidRow(offset = 10,
-    downloadButton("report", "Generate report", class = "butt1"),
-    #Putting the color of the button in black and the writing in white so it is easier to see and to interact with
-    tags$head(tags$style(".butt1{background-color:black;} .butt1{color: white;}"))
+             menuSubItem("Overview", tabName = "overview_pre"), icon = icon("fas fa-plane")
+    )
   )
-)
 )
 
 body <- dashboardBody(
@@ -60,7 +46,7 @@ body <- dashboardBody(
                box(
                  plotlyOutput("plot_overview")
                )
-            )
+        )
       ),
       fluidRow(
         column(width = 8, offset =4,

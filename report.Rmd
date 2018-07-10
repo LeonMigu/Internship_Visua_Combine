@@ -26,6 +26,8 @@ mww <- params$max_word_wordcloud
 l <- length(ds$rowname)
 ```
 
+The parameters chosen in this analysis are the frequencies between `r mifw` and `r mafw`, and a maximum number of words of `r mww` for the wordcloud.
+
 #Overview 
 
 You can see just below the different plots of the overview: 
@@ -76,7 +78,7 @@ kable(ds, caption ="Table of the data selected in the plot")
 
 ##Wordcloud
 
-You can see just below the wordcloud with the interesting points with their frequencies between `r mifw` and `r mafw`, and a maximum number of words of `r mww`:
+You can see just below the wordcloud with the interesting points :
 
 ```{r}
 bp.cols<- c("light blue","cornflowerblue", "coral2", brewer.pal(8,"Dark2"))

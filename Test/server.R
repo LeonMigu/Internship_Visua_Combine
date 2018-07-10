@@ -68,7 +68,7 @@ server <- function(input, output, session){
     capture.output(report, file=NULL)
   })
   
-
+  
   
   output$report <- downloadHandler(
     filename = function() {
