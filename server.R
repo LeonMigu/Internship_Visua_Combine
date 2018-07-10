@@ -15,7 +15,7 @@ server <- function(input, output, session){
         plot_ly(d_shared, x = ~rowname, y = ~freq, key = ~key, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequency according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected", 'plotly_deselect',  defaultValues = s,color = I('green'))
       }
       else if(input$choice=='Random'){
-        plot_ly(d_shared, x = ~rowname, y = ~sort(random, decreasing = TRUE), key = ~key, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Random according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Random'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected", 'plotly_deselect', defaultValues = s, color = I('green'))
+        plot_ly(d_shared, x = ~rowname, y = ~random, key = ~key, type = 'scatter', mode='markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Random according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Random'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected", 'plotly_deselect', defaultValues = s, color = I('green'))
         
       }
     }
@@ -25,7 +25,7 @@ server <- function(input, output, session){
         plot_ly(d, x = ~rowname, y = ~freq, key = ~key, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequency according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)
       }
       else if(input$choice=='Random'){
-        plot_ly(d, x = ~rowname, y = ~sort(random, decreasing = TRUE), key = ~key, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Random according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Random'), titlefont = 'arial', showlegend = FALSE)      
+        plot_ly(d, x = ~rowname, y = ~random, key = ~key, type = 'scatter', mode='markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Random according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Random'), titlefont = 'arial', showlegend = FALSE)      
       }
     }
   })
@@ -54,7 +54,7 @@ server <- function(input, output, session){
     d_prime_reac <- reactive({data.frame(d_real_shared()$word, d_real_shared()$freq)})
     head(subset(d_prime_reac(), d_real_shared...freq <= input$slide_value_freq[2] & d_real_shared...freq >= 
                   input$slide_value_freq[1]), 
-         input$slide_value_word+1)
+         input$slide_value_word)
   })
   
   #Creating the wordcloud and making it reactive to change in the input values
@@ -63,6 +63,13 @@ server <- function(input, output, session){
   output$test <- renderPrint({
     input$selected_word
   })
+  
+  progress <- reactive({
+    capture.output(report, file=NULL)
+  })
+  
+
+  
   output$report <- downloadHandler(
     filename = function() {
       paste('my_report', sep = '.', switch(
@@ -73,7 +80,8 @@ server <- function(input, output, session){
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
       # can happen when deployed).
-      withProgress(message ="generating report", expr = {tempReport <- file.path(tempdir(), "report.Rmd")
+      
+      withProgress(message ="Generating report", detail =  "it might takes a little while", expr = {tempReport <- file.path(tempdir(), "report.Rmd")
       file.copy("report.Rmd", tempReport, overwrite = TRUE)
       
       # Set up parameters to pass to Rmd document
@@ -91,9 +99,12 @@ server <- function(input, output, session){
       params = params,
       envir = new.env(parent = globalenv())
       )
-      }
+      },
+      min = 1,
+      value = 1
       )
     }
   )
+  
 }
 return(server)

@@ -37,12 +37,13 @@ m <- as.matrix(dtm)
 v <- sort(rowSums(m),decreasing=TRUE)
 r <- abs(rnorm(length(v)))
 w <- names(v)
+row_r <- order(r, decreasing = TRUE)
 #Changing the data structure in order that the id is a number and not a word, if not it doesn't work
 names(v) <- seq(1, length(v))
 #Implementing rownames in order to access them later. It will be useful to make the key
 wr <- seq(1, length(v))
 #Creating the dataframe 
-d <- data.frame(rowname = wr, word = w, freq=v, random = r)
+d <- data.frame(rowname = wr, word = w, freq=v, rowname_r = row_r, random = r)
 head(d, 10)
 
 #Find the maximum frequency and the number of words to implement the sliderinputs

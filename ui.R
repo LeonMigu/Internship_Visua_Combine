@@ -10,6 +10,7 @@ library(knitr)
 library(webshot)
 library(shinydashboard)
 #library(tinytext)
+library(knitrProgressBar)
 
 
 #Shiny App
@@ -47,7 +48,7 @@ body <- dashboardBody(
                  selectInput(inputId = 'choice', label = 'Choose a metric', 
                              choice = c('Frequency', 'Random'))               )
         ),
-        column(width = 8,
+        column(width = 4,
                box(
                  plotlyOutput("plot_overview")
                )
