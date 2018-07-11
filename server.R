@@ -1,8 +1,34 @@
 #Server function that implements the back-end 
 
 server <- function(input, output, session){
-  #Shared data between the plot and the datatable of the overview and the wordcloud
-  d_shared <- SharedData$new(d, ~key)
+  # use the key aesthetic/argument to help uniquely identify selected observations
+  key_first <- row.names(d)
+  
+  #Shared data 
+  d_selected <- SharedData$new(d, ~key_first)
+  d_sel_use <- reactive({d[d_selected$selection(),]})
+  
+  # use the key aesthetic/argument to help uniquely identify selected observations
+  key <- reactive({row.names(d_sel_use())})
+  
+  #length of the selected data on the first plot
+  l <- reactive({NROW(d_sel_use())})
+  
+  #Plotting the data in the overview of the preprocessing
+    output$plot_data <- renderPlotly({
+      s <- input$plot_rows_selected
+      if(!length(s)){
+    plot_ly(d_selected, x = ~rowname, y = rep(1, n), key = ~key_first, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected", 'plotly_deselect',  defaultValues = s,color = I('green'))      
+      }
+      else if(length(s)){
+        plot_ly(d, x = ~rowname, y = rep(1, n), key = ~key_first, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE)
+      }
+    })
+    
+
+    
+  #Shared data between the plot and the datatable of the overview and the wordcloud for the analysis
+  d_shared <- reactive({SharedData$new(d_sel_use(), ~key())})
   
   #Plotting the scatterplot with plotly
   output$plot_overview <- renderPlotly({
@@ -12,20 +38,20 @@ server <- function(input, output, session){
     #if there are no row selected yet, you can highlight the plot by selecting some points
     if(!length(s)){
       if(input$choice=='Frequency'){
-        plot_ly(d_shared, x = ~rowname, y = ~freq, key = ~key, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequency according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected", 'plotly_deselect',  defaultValues = s,color = I('green'))
+        plot_ly(d_shared(), x = ~rowname, y = ~freq, key = ~key(), type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequency according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected", 'plotly_deselect',  defaultValues = s,color = I('green'))
       }
       else if(input$choice=='Random'){
-        plot_ly(d_shared, x = ~rowname, y = ~random, key = ~key, type = 'scatter', mode='markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Random according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Random'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected", 'plotly_deselect', defaultValues = s, color = I('green'))
+        plot_ly(d_shared(), x = ~rowname, y = ~random, key = ~key(), type = 'scatter', mode='markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Random according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Random'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected", 'plotly_deselect', defaultValues = s, color = I('green'))
         
       }
     }
     #If there are row selected, you can't higlight the plot because it is already highlighted 
     else if(length(s)){
       if(input$choice=='Frequency'){
-        plot_ly(d, x = ~rowname, y = ~freq, key = ~key, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequency according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)
+        plot_ly(d_sel_use(), x = ~rowname, y = ~freq, key = ~key(), type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Frequency according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Frequency'), titlefont = 'arial', showlegend = FALSE)
       }
       else if(input$choice=='Random'){
-        plot_ly(d, x = ~rowname, y = ~random, key = ~key, type = 'scatter', mode='markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Random according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Random'), titlefont = 'arial', showlegend = FALSE)      
+        plot_ly(d_sel_use(), x = ~rowname, y = ~random, key = ~key(), type = 'scatter', mode='markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Random according to the word', xaxis = list(title ='Word'), yaxis =list(title ='Random'), titlefont = 'arial', showlegend = FALSE)      
       }
     }
   })
@@ -33,9 +59,9 @@ server <- function(input, output, session){
   #Plotting the Data Table
   output$table_overview <- DT::renderDataTable({
     #Choosing the data selected in the plot. It is done by crosstalk, see CRAN R Crosstalk SharedData for more details
-    dsel <- d[d_shared$selection(),]
+    dsel <- d_sel_use()[d_shared()$selection(),]
     #Creating the data table with the initial data
-    dt <-DT::datatable(d,options = list(columnDefs = list(list(className = 'dt-center', targets = "_all")),pageLength = 5, lengthMenu = c(5, 10, 15, 20)),class = 'display')
+    dt <-DT::datatable(d_sel_use(),options = list(columnDefs = list(list(className = 'dt-center', targets = "_all")),pageLength = 5, lengthMenu = c(5, 10, 15, 20)),class = 'display')
     #This condition is whether a data is selected on the plot
     if (NROW(dsel) == 0) {
       dt
@@ -47,7 +73,7 @@ server <- function(input, output, session){
   })
   
   #Choosing the data which is shared with the plot
-  d_real_shared <- reactive({d[d_shared$selection(),]})
+  d_real_shared <- reactive({d_sel_use()[d_shared()$selection(),]})
   #Choosing the data to give to the wordcloud, depending on which data is taken from plotly
   filter_d <- reactive({
     #Changing the data in order to match what the wordcloud takes as an input
@@ -85,7 +111,7 @@ server <- function(input, output, session){
       file.copy("report.Rmd", tempReport, overwrite = TRUE)
       
       # Set up parameters to pass to Rmd document
-      params <- list(data_complete = d, data_selected_plot = d[d_shared$selection(),], 
+      params <- list(data_complete = d, data_selected_plot = d[d_shared()$selection(),], 
                      min_freq_wordcloud = input$slide_value_freq[1], max_freq_wordcloud = input$slide_value_freq[2],
                      max_word_wordcloud = input$slide_value_word)
       

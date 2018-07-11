@@ -44,6 +44,14 @@ sidebar <- dashboardSidebar(
 body <- dashboardBody(
   tabItems(
     tabItem(
+      tabName = "overview_pre",
+      fluidRow(
+        box(
+          plotlyOutput("plot_data")
+        )
+      )
+    ),
+    tabItem(
       tabName = "data",
       fileInput("inputdata", "Choose PDF File", multiple = FALSE)
     ),
