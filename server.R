@@ -1,32 +1,92 @@
 #Server function that implements the back-end 
 
 server <- function(input, output, session){
+  
+  
+  d_num <- reactive({
+    head(subset(d, rowname >= input$num_offset_data), input$num_word_data)
+  })
+  
   # use the key aesthetic/argument to help uniquely identify selected observations
   key_first <- row.names(d)
   
-  #Shared data 
-  d_selected <- SharedData$new(d, ~key_first)
-  d_sel_use <- reactive({d[d_selected$selection(),]})
+  
+  
+  #Data that will be given to the analysis part as main data. It depends on the way to choose it (select, numeric input, checkbox) 
+  d_selected <- reactive({
+    if(input$all == TRUE){
+      d
+    }
+    else if(input$all == FALSE){
+      if(input$num_check== TRUE){
+        d_num()
+      }
+      else if(input$num_check == FALSE){
+        SharedData$new(d, ~key_first)
+      }
+    }
+  })
+  d_sel_use <- reactive({
+    if(input$all == TRUE){
+      d
+    }
+    else if(input$all == FALSE){
+      if(input$num_check==TRUE){
+        d_num()
+      }
+      else if(input$num_check ==FALSE){
+        d[d_selected()$selection(),]
+      }
+    }
+    })
+  
+  #Select one checkbox when the other is selected
+  observeEvent(input$all, {
+    if(input$all == TRUE){
+      updateCheckboxInput(session, "num_check", value = FALSE)
+    }
+  })
+  
+  observeEvent(input$num_check, {
+    if(input$num_check == TRUE){
+      updateCheckboxInput(session, "all", value = FALSE)
+    }
+  })
   
   # use the key aesthetic/argument to help uniquely identify selected observations
   key <- reactive({row.names(d_sel_use())})
   
-  #length of the selected data on the first plot
+  #length of the selected data with the numeric conditions
   l <- reactive({NROW(d_sel_use())})
   
   #Plotting the data in the overview of the preprocessing
     output$plot_data <- renderPlotly({
       s <- input$plot_rows_selected
-      if(!length(s)){
-    plot_ly(d_selected, x = ~rowname, y = rep(1, n), key = ~key_first, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected", 'plotly_deselect',  defaultValues = s,color = I('green'))      
+      if(input$num_check==FALSE){
+        if(!length(s)){
+          plot_ly(d_selected(), x = ~rowname, y = rep(1, n), key = ~key_first, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected", 'plotly_deselect',  defaultValues = s,color = I('green'))      
+        }
+        else if(length(s)){
+          plot_ly(d, x = ~rowname, y = rep(1, n), key = ~key_first, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE)
+        }
       }
-      else if(length(s)){
-        plot_ly(d, x = ~rowname, y = rep(1, n), key = ~key_first, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE)
+      else if(input$num_check==TRUE){
+        plot_ly(d_num(), x = ~rowname, y = rep(1, NROW(d_num())), key = ~row.names(d_num()), type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE)
       }
     })
     
-
-    
+  #Printing the number of words and the maximum number of words 
+  output$num_data <- renderUI({
+    tagList(renderText({"The number of words of the input file is"}),
+      renderPrint({n}),
+      renderText({"and the maximum number of words you can currently choose is"}),
+      renderPrint({n-input$num_offset_data+1}),
+      if(input$slide_value_word > n-input$num_offset_data+1){
+        renderText("You have chosen a number of words that is too high, it will just pick every word after the chosen offset")
+      }
+    )
+    })
+  
   #Shared data between the plot and the datatable of the overview and the wordcloud for the analysis
   d_shared <- reactive({SharedData$new(d_sel_use(), ~key())})
   
