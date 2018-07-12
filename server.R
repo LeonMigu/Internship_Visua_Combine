@@ -52,7 +52,7 @@ server <- function(input, output, session){
       updateCheckboxInput(session, "all", value = FALSE)
     }
   })
-  
+
   # use the key aesthetic/argument to help uniquely identify selected observations
   key <- reactive({row.names(d_sel_use())})
   
@@ -64,15 +64,26 @@ server <- function(input, output, session){
       s <- input$plot_rows_selected
       if(input$num_check==FALSE){
         if(!length(s)){
-          plot_ly(d_selected(), x = ~rowname, y = rep(1, n), key = ~key_first, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected", 'plotly_deselect',  defaultValues = s,color = I('green'))      
+          plot_ly(d_selected(), x = ~rowname, y = rep(1, n), key = ~key_first, type = 'scatter',source = "select1", mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected", 'plotly_deselect',  defaultValues = s,color = I('green'))      
         }
         else if(length(s)){
-          plot_ly(d, x = ~rowname, y = rep(1, n), key = ~key_first, type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE)
+          plot_ly(d, x = ~rowname, y = rep(1, n), key = ~key_first, type = 'scatter',source = "select2", mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE)
         }
       }
       else if(input$num_check==TRUE){
-        plot_ly(d_num(), x = ~rowname, y = rep(1, NROW(d_num())), key = ~row.names(d_num()), type = 'scatter', mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE)
+        plot_ly(d_num(), x = ~rowname, y = rep(1, NROW(d_num())), key = ~row.names(d_num()), type = 'scatter',source = "select3", mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE)
       }
+      # d <- event_data("plotly_selected", source = "select1")
+      # if(is.null(d)== FALSE){
+      #   updateCheckboxInput(session, "all", value = FALSE)
+      # }
+      #switch(toString(is.null(d)), "FALSE" = {updateCheckboxInput(session, "all", value = FALSE)})
+      # observeEvent(event_data("plotly_selected", source = "select2"), {
+      #   updateCheckboxInput(session, "all", value = FALSE)
+      # })
+      # observeEvent(event_data("plotly_selected", source = "select3"), {
+      #   updateCheckboxInput(session, "all", value = FALSE)
+      # })
     })
     
   #Printing the number of words and the maximum number of words 
@@ -81,9 +92,10 @@ server <- function(input, output, session){
       renderPrint({n}),
       renderText({"and the maximum number of words you can currently choose is"}),
       renderPrint({n-input$num_offset_data+1}),
-      if(input$slide_value_word > n-input$num_offset_data+1){
+      if(input$num_word_data > n-input$num_offset_data+1){
         renderText("You have chosen a number of words that is too high, it will just pick every word after the chosen offset")
-      }
+      },
+      renderPrint({event.data()})
     )
     })
   
@@ -143,11 +155,19 @@ server <- function(input, output, session){
          input$slide_value_word)
   })
   
+  #Updating the value of the maximum of the slider input for the number of words and for the frequency
+  m_act <- reactive({max(d_sel_use()$freq)})
+  n_act <- reactive({NROW(d_sel_use())})
+  observeEvent(d_sel_use(),{updateSliderInput(session,inputId = "slide_value_freq", label = "Filter the frequency", min = 1, max = m_act(), value = c(1,m_act()), step = 1)})
+  observeEvent(d_sel_use(),{updateSliderInput(session,inputId = "slide_value_word", label = "Choose the maximum number of words", min = 1, max = n_act(), value = n_act(), step = 1)})
+  
+  
   #Creating the wordcloud and making it reactive to change in the input values
   output$wordcloud  <- renderWordcloud2(wordcloud2(data = filter_d(),
                                                    shape = 'star', size = 0.8, shuffle =FALSE))
   output$test <- renderPrint({
-    input$selected_word
+    filter_d()
+    m_act()
   })
   
   progress <- reactive({
