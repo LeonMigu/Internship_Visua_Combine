@@ -12,8 +12,8 @@ server <- function(input, output, session){
   
   
   
-  #Data that will be given to the analysis part as main data. It depends on the way to choose it (select, numeric input, checkbox) 
-  d_selected <- reactive({
+  #Almost all Data that will be given to the analysis part as main data. It depends on the way to choose it (select, numeric input, checkbox). It is firstly done without the checkbox group, then just below, it is done with it.
+  d_selected_av <- reactive({
     if(input$all == TRUE){
       d
     }
@@ -26,7 +26,7 @@ server <- function(input, output, session){
       }
     }
   })
-  d_sel_use <- reactive({
+  d_sel_use_av <- reactive({
     if(input$all == TRUE){
       d
     }
@@ -40,52 +40,94 @@ server <- function(input, output, session){
     }
     })
   
-  #Select one checkbox when the other is selected
-  observeEvent(input$all, {
-    if(input$all == TRUE){
-      updateCheckboxInput(session, "num_check", value = FALSE)
+  #This is the data created by the checkboxgroup
+  d_books <- reactive({
+    local_data <- data.frame()
+    for(b_id in input$book){
+      #num_book_input is the number of the book. gsub find the number by removing "Book" from "Booki" and then strtoi converts that to an integer to subset the data
+      num_book_input <- strtoi(gsub("Book", "",b_id))
+      #Subesting the data d and then adding this subset to the local data with all books selected
+      local_data <- rbind(local_data, subset(d, book == num_book_input))
+    }
+    local_data
+    
+  })
+  
+  #All Data that will be given to the analysis part as main data
+  d_sel_use <- reactive({
+    if(length(input$book)){
+      d_books()
+    }
+    else if(!length(input$book)){
+      d_sel_use_av()
     }
   })
   
-  observeEvent(input$num_check, {
-    if(input$num_check == TRUE){
-      updateCheckboxInput(session, "all", value = FALSE)
+  d_selected <- reactive({
+    if(length(input$book)){
+      d_books()
+    }
+    else if(!length(input$book)){
+      d_selected_av()
     }
   })
-
+  
   # use the key aesthetic/argument to help uniquely identify selected observations
   key <- reactive({row.names(d_sel_use())})
   
   #length of the selected data with the numeric conditions
   l <- reactive({NROW(d_sel_use())})
   
-  #Plotting the data in the overview of the preprocessing
+  #Plotting the data in the overview of the preprocessing. A lot of if to cover all the cases. It isn't really possible by plotting the data that will be shared because of the key. I didn't manage to make it work that way so I used a ot of if..
     output$plot_data <- renderPlotly({
-      s <- input$plot_rows_selected
-      if(input$num_check==FALSE){
-        if(!length(s)){
-          plot_ly(d_selected(), x = ~rowname, y = rep(1, n), key = ~key_first, type = 'scatter',source = "select1", mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE)%>% highlight("plotly_selected", 'plotly_deselect',  defaultValues = s,color = I('green'))      
-        }
-        else if(length(s)){
-          plot_ly(d, x = ~rowname, y = rep(1, n), key = ~key_first, type = 'scatter',source = "select2", mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE)
-        }
+      s <- input$rows_selected
+      if(input$all==TRUE){
+        plot_ly(d, x = ~rowname, y = rep(1, n), key = ~key_first, type = 'scatter',source = "select", mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE, dragmode = "select")
       }
       else if(input$num_check==TRUE){
-        plot_ly(d_num(), x = ~rowname, y = rep(1, NROW(d_num())), key = ~row.names(d_num()), type = 'scatter',source = "select3", mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE)
+        plot_ly(d_num(), x = ~rowname, y = rep(1, NROW(d_num())), key = ~row.names(d_num()), type = 'scatter',source = "select", mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE, dragmode = "select")
       }
-      # d <- event_data("plotly_selected", source = "select1")
-      # if(is.null(d)== FALSE){
-      #   updateCheckboxInput(session, "all", value = FALSE)
-      # }
-      #switch(toString(is.null(d)), "FALSE" = {updateCheckboxInput(session, "all", value = FALSE)})
-      # observeEvent(event_data("plotly_selected", source = "select2"), {
-      #   updateCheckboxInput(session, "all", value = FALSE)
-      # })
-      # observeEvent(event_data("plotly_selected", source = "select3"), {
-      #   updateCheckboxInput(session, "all", value = FALSE)
-      # })
+      else if(length(input$book)){
+        plot_ly(d_books(), x = ~rowname, y = rep(1, NROW(d_books())), key = ~row.names(d_books()), type = 'scatter',source = "select", mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE, dragmode = "select")
+      }
+      else{
+        if(!length(s)){
+          plot_ly(d_selected(), x = ~rowname, y = rep(1, n), key = ~key_first, type = 'scatter',source = "select", mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE, dragmode = "select")%>% highlight("plotly_selected", 'plotly_deselect',  defaultValues = s,color = I('green'))      
+        }
+        else if(length(s)){
+          plot_ly(d, x = ~rowname, y = rep(1, n), key = ~key_first, type = 'scatter',source = "select", mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE, dragmode = "select")
+        }
+      }
+    })
+    #Deselect the other checkboxs when one is selected
+    observeEvent(input$all, {
+      if(input$all == TRUE){
+        updateCheckboxInput(session, "num_check", value = FALSE)
+        updateCheckboxGroupInput(session, "book", selected = character(0))
+      }
     })
     
+    observeEvent(input$num_check, {
+      if(input$num_check == TRUE){
+        updateCheckboxInput(session, "all", value = FALSE)
+        updateCheckboxGroupInput(session, "book", selected = character(0))
+      }
+    })
+    
+    observeEvent(input$book, {
+      if(length(input$book)){
+        updateCheckboxInput(session, "all", value = FALSE)
+        updateCheckboxInput(session, "num_check", value = FALSE)
+      }
+    })
+    
+  #Deselecting the check boxes when selecting the plot
+     observeEvent(event_data("plotly_selected", source = "select"), {
+       updateCheckboxInput(session, "all", value = FALSE)
+       updateCheckboxInput(session, "num_check", value = FALSE)
+       updateCheckboxGroupInput(session, "book", selected = character(0))
+     })
+     
   #Printing the number of words and the maximum number of words 
   output$num_data <- renderUI({
     tagList(renderText({"The number of words of the input file is"}),
@@ -95,7 +137,10 @@ server <- function(input, output, session){
       if(input$num_word_data > n-input$num_offset_data+1){
         renderText("You have chosen a number of words that is too high, it will just pick every word after the chosen offset")
       },
-      renderPrint({event.data()})
+      renderPrint({input$plot_rows_selected}),
+      renderPrint({d_books()}),
+      renderPrint({input$book}),
+      renderPrint({d_sel_use()})
     )
     })
   
@@ -167,7 +212,6 @@ server <- function(input, output, session){
                                                    shape = 'star', size = 0.8, shuffle =FALSE))
   output$test <- renderPrint({
     filter_d()
-    m_act()
   })
   
   progress <- reactive({

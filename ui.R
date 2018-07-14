@@ -55,7 +55,11 @@ body <- dashboardBody(
           numericInput(inputId = "num_offset_data", label = "Choose the number of the first word", min = 1, max = n, value = 1),
           numericInput(inputId = "num_word_data", label = "Choose the number of words follwing the offset", min = 1, max = n, value = n),
           uiOutput("num_data")
-        )
+        ),
+        box(
+          checkboxGroupInput("book", "Choose one or more book(s)",
+                               check_choices, inline = TRUE)
+          )
       )
     ),
     tabItem(
