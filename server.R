@@ -45,9 +45,9 @@ server <- function(input, output, session){
     local_data <- data.frame()
     for(b_id in input$book){
       #num_book_input is the number of the book. gsub find the number by removing "Book" from "Booki" and then strtoi converts that to an integer to subset the data
-      num_book_input <- strtoi(gsub("Book", "",b_id))
+      id_book_input <- gsub("Book", "",b_id)
       #Subesting the data d and then adding this subset to the local data with all books selected
-      local_data <- rbind(local_data, subset(d, book == num_book_input))
+      local_data <- rbind(local_data, subset(d, book == id_book_input))
     }
     local_data
     
@@ -82,20 +82,20 @@ server <- function(input, output, session){
     output$plot_data <- renderPlotly({
       s <- input$rows_selected
       if(input$all==TRUE){
-        plot_ly(d, x = ~rowname, y = rep(1, n), key = ~key_first, type = 'scatter',source = "select", mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE, dragmode = "select")
+        plot_ly(d, x = ~rowname, y = rep(1, n), key = ~key_first, type = 'scatter',source = "select", mode='lines+markers',  color = ~book )%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE, dragmode = "select")
       }
       else if(input$num_check==TRUE){
-        plot_ly(d_num(), x = ~rowname, y = rep(1, NROW(d_num())), key = ~row.names(d_num()), type = 'scatter',source = "select", mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE, dragmode = "select")
+        plot_ly(d_num(), x = ~rowname, y = rep(1, NROW(d_num())), key = ~row.names(d_num()), type = 'scatter',source = "select", mode='lines+markers', color = ~book )%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE, dragmode = "select")
       }
       else if(length(input$book)){
-        plot_ly(d_books(), x = ~rowname, y = rep(1, NROW(d_books())), key = ~row.names(d_books()), type = 'scatter',source = "select", mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE, dragmode = "select")
+        plot_ly(d_books(), x = ~rowname, y = rep(1, NROW(d_books())), key = ~row.names(d_books()), type = 'scatter',source = "select", mode='lines+markers',color = ~book  )%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE, dragmode = "select")
       }
       else{
         if(!length(s)){
-          plot_ly(d_selected(), x = ~rowname, y = rep(1, n), key = ~key_first, type = 'scatter',source = "select", mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE, dragmode = "select")%>% highlight("plotly_selected", 'plotly_deselect',  defaultValues = s,color = I('green'))      
+          plot_ly(d_selected(), x = ~rowname, y = rep(1, n), key = ~key_first, type = 'scatter',source = "select", mode='lines+markers',color = ~book  )%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE, dragmode = "select")%>% highlight("plotly_selected", 'plotly_deselect',  defaultValues = s,color = I('green'))      
         }
         else if(length(s)){
-          plot_ly(d, x = ~rowname, y = rep(1, n), key = ~key_first, type = 'scatter',source = "select", mode='lines+markers',  marker = list(color = 'blue', opacity=2))%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE, dragmode = "select")
+          plot_ly(d, x = ~rowname, y = rep(1, n), key = ~key_first, type = 'scatter',source = "select", mode='lines+markers',color = ~book  )%>%layout(title = 'Data plot', xaxis = list(title ='Word'), titlefont = 'arial', showlegend = FALSE, dragmode = "select")
         }
       }
     })
@@ -136,11 +136,7 @@ server <- function(input, output, session){
       renderPrint({n-input$num_offset_data+1}),
       if(input$num_word_data > n-input$num_offset_data+1){
         renderText("You have chosen a number of words that is too high, it will just pick every word after the chosen offset")
-      },
-      renderPrint({input$plot_rows_selected}),
-      renderPrint({d_books()}),
-      renderPrint({input$book}),
-      renderPrint({d_sel_use()})
+      }
     )
     })
   
